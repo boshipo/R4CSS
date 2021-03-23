@@ -30,9 +30,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(httr)
 options(stringsAsFactors = F)
-
 url <- "https://data.taipei/api/getDatasetInfo/downloadResource?id=68785231-d6c5-47a1-b001-77eec70bec02&rid=93d9bc2d-af08-4db7-a56b-9f0a49226fa3"
 df <- read.csv(url, fileEncoding = "big5")
+
 ```
 
 
@@ -42,7 +42,7 @@ df <- read.csv(url, fileEncoding = "big5")
 
 ```{r}
 # read.csv() to read csv and convert it to a data.frame
-df <- read.csv("data/tptheft.csv", fileEncoding = "big5")
+#df <- read.csv("data/tptheft.csv", fileEncoding = "big5")
 
 # Checking the strcutrue of it
 str(df)
@@ -89,11 +89,12 @@ df <- read.csv("data/tptheft.csv", fileEncoding = "big5", stringsAsFactors = FAL
 * `str(df)`
 
 ```{r}
-# View(df)
+#View(df)
 head(df)	# get first part of the data.frame
 class(df)
 str(df)
 summary(df)
+
 # look up help
 help(summary)
 ?summary
@@ -153,14 +154,14 @@ df$region <- substr(df$發生.現.地點, 4, 5)
 
 ```{r}
 # Filtering observations happened in Taipei city
-df <- df[df$county == "台北市", ]
+df <- df[df$county == "臺北市", ]
 
 
 # counting the frequency of time variable
 table(df$time)
 
 # counting the frequency of region variable
-table(df$region)
+table(df$region, df$time)
 ```
 
 
@@ -182,10 +183,10 @@ tapply(df$編號, df$region, length)
 
 ```{r}
 # filter out irrelevant timestamp
-df <- df[!df$time %in% c("00~03", "06~09", "09~12", "12~15", "15~18", "19~21", "21~24"), ]
+#df <- df[!df$time %in% c("00~03", "06~09", "09~12", "12~15", "15~18", "19~21", "21~24"), ]
 
 # filter out irrelevant region(area)
-df <- df[!df$region %in% c("三重", "中和", "淡水", "板橋"), ]
+#df <- df[!df$region %in% c("三重", "中和", "淡水", "板橋"), ]
 ```
 
 
@@ -197,7 +198,7 @@ df <- df[!df$region %in% c("三重", "中和", "淡水", "板橋"), ]
 ```{r}
 
 # Tabulating time and region variables
-res_table <- table(df$time, df$region)
+res_table <- table(df$"發生時段", df$region)
 
 # Checking it class and its content
 class(res_table)
@@ -258,7 +259,7 @@ colors <- c('#D0104C', '#DB4D6D', '#E83015',  '#F75C2F',
             '#E79460', '#E98B2A', '#9B6E23', '#F7C242',
             '#BEC23F', '#90B44B', '#66BAB7', '#1E88A8')
 par(family=('STKaiti'))
-mosaicplot(res_table, color=colors, border=0, off = 3,
+mosaicplot(res_table, color=colors, border=1, off = 0,
 		   main="Theft rate of Taipei city (region by hour)")
 ```
 

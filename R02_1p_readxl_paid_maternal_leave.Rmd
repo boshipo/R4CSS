@@ -35,8 +35,9 @@ knitr::opts_chunk$set(echo = TRUE)
 # install.packages("tidyverse")
 # install.packages("tidyverse")
 library(readxl)
-
+# readxl::read_excel()
 # Loading global option to avoid converting character vector to factor
+options(stringsAsFactors = FALSE)
 
 ```
 
@@ -50,6 +51,7 @@ library(readxl)
 
 ```{r}
 # use ?read_excel or help(read_exel) to check out the function
+df <- read_excel("data/WORLD-MACHE_Gender_6.8.15.xls", sheet = 1, col_name = TRUE)
 
 # read_excel(path, sheet = NULL, range = NULL, col_names = TRUE, col_types = NULL, na = "", trim_ws = TRUE, skip = 0, n_max = Inf, guess_max = min(1000, n_max))
 ```
@@ -61,20 +63,21 @@ library(readxl)
 
 ```{r read excel}
 # Import readxl package
+library(readxl)
 
 # Use read_excel() to convert excel sheet to data.frame
-
+df <- read_excel("data/WORLD-MACHE_Gender_6.8.15.xls")
 ```
 
 # 2. Preview data by `View()`, `class()`, `dim()`, `str()`, `summary()` and `names()`
 
 ```{r preview data}
 # View(df)
-
-
-
+View(df)
+class(df)
+dim(df)
 # Show names of variables (vectors, columns) by names()
-
+names(df)
 ```
 
 
@@ -83,11 +86,12 @@ library(readxl)
 
 ```{r}
 # Select the 3rd and 6th to 24th columns
-
+matleave <- df[,c(3, 6:24)]
 
 # Use class(), dim(), and str() to inspect the data
-
-
+class(matleave)
+dim(matleave)
+str(matleave)
 
 ```
 
@@ -102,17 +106,16 @@ library(readxl)
 
 ```{r}
 # Use is.na() to detect NA element (TRUE/FALSE)
-
+is.na(matleave)
 
 # Assign 0 to those NA data
-
+matleave[is.na(matleave)] <- 0
 
 # anyNA() to check if there are still NA cells.
-
+anyNA(matleave)
 
 # sum(is.na()) to count the number of NA
-
-
+sum(is.na(matleave))
 
 ```
 
@@ -123,15 +126,15 @@ library(readxl)
 ```{r}
 # Use logical comparison to see if the last year equals to 5
 # Assign matching row to var m5 when 2013 data(matleave_13 equals to 5
-
+m5 <- matleave[matleave$matleave_13 == 5,]
 
 # nrow() to count matching data
-
+nrow(m5)
 
 # Is it possible to use length() to check the data length? If not, how to do it?
-# matleave$'matleave_13'
-# matleave$'matleave_13'==5
-# length(matleave$'matleave_13'==5)
+matleave$'matleave_13'
+matleave$'matleave_13'==5
+length(matleave$'matleave_13'==5)
 ```
 
 
@@ -141,10 +144,10 @@ library(readxl)
 
 ```{r}
 # filter rows whose 'matleave_95' is 5, and assign to var m55
-
+m55 <- m5[m5$matleave_95 == 5,]
 
 # filter rows whose 'matleave_95' is not 5, and assign to var m05
-
+m05 <- m5[m5$matleave_95 != 5,]
 
 ```
 
@@ -161,7 +164,7 @@ library(readxl)
 ```{r}
 # barplot() the second row of m55
 # Observing the error msg carefully
-barplot(m55[2, ])       # raise error
+barplot(unlist(m55[2, -1]))       # raise error
 
 # barplot() the second row when neglecting the first column
 # Observing the error msg carefully
@@ -173,7 +176,7 @@ class(matleave[2, -1])
 class(unlist(matleave[2, -1]))
 
 
-barplot(unlist(m55[2, -1]))
+barplot(unlist(m05[2, -1]))
 ```
 
 * Testing
@@ -195,13 +198,13 @@ class(m55$iso3)	# character (vector)
 ## 5.2 More arguments (args)
 ```{r}
 # barplot() the unlisted second row (neglecting the first col)
-
+barplot(unlist(m55[2, -1]))
 
 # use ?barplot to know more argument of the function.
-
+?barplot
 
 # Add arguments ylim, space, border, and axat/yaxt one by one to barplot()
-
+barplot(unlist(m55[2, -1]), space = 0, border = NA, xaxt = "n", yaxt = "n", main = m55[2, 1], line = -4, cex.main = 5, ylim = c(0, 5))
 
 
 
@@ -214,7 +217,30 @@ class(m55$iso3)	# character (vector)
 
 ```{r}
 # plot the 1st row
-
+barplot(unlist(m55[1, -1]), space = 0, border =
+        NA, xaxt = "n", yaxt = "n", main = m55[1, 
+        1], line = -4, cex.main = 5, ylim = c(0, 
+        5))
+barplot(unlist(m55[2, -1]), space = 0, border =
+        NA, xaxt = "n", yaxt = "n", main = m55[2, 
+        1], line = -4, cex.main = 5, ylim = c(0, 
+        5))
+barplot(unlist(m55[3, -1]), space = 0, border =
+        NA, xaxt = "n", yaxt = "n", main = m55[3, 
+        1], line = -4, cex.main = 5, ylim = c(0, 
+        5))
+barplot(unlist(m55[4, -1]), space = 0, border =
+        NA, xaxt = "n", yaxt = "n", main = m55[4, 
+        1], line = -4, cex.main = 5, ylim = c(0, 
+        5))
+barplot(unlist(m55[5, -1]), space = 0, border =
+        NA, xaxt = "n", yaxt = "n", main = m55[5, 
+        1], line = -4, cex.main = 5, ylim = c(0, 
+        5))
+barplot(unlist(m55[6, -1]), space = 0, border =
+        NA, xaxt = "n", yaxt = "n", main = m55[6, 
+        1], line = -4, cex.main = 5, ylim = c(0, 
+        5))
 
 # plot the 2nd to 6th rows
 
@@ -227,8 +253,11 @@ class(m55$iso3)	# character (vector)
 
 ```{r}
 # use for loop and use i as index to barplot multiple subgraphs
+for (i in 1:10){
+    barplot(unlist(m05[i, -1]), space = 0, border     = NA, xaxt = "n", yaxt = "n", main = m05[i, 
+    1], line = -4, cex.main = 5, ylim = c(0, 5))
 
-
+}
 ```
 
 
@@ -243,12 +272,15 @@ class(m55$iso3)	# character (vector)
 
 ```{r}
 # use ?par to get more plotting parameters
-
-
+par(mfrow=c(4,6), mar = c(0, 0, 0, 0)+0.2)
+for (i in 1:nrow(m55)){
+    barplot(unlist(m55[i, -1]), space = 0, border     = NA, xaxt = "n", yaxt = "n", main = m55[i, 
+    1], line = -3, cex.main = 3, ylim = c(0, 5))
+}
 # use par() to set-up the layout of subgraphs
 # use the parameter main=c(0.2, 0.2, 0.2, 0.2) to thrink the padding of figures.
 par(mfrow=c(3,2), mai= c(0.2, 0.2, 0.2, 0.2))
-for(i in 1:6){
+for(i in 1:nrow(m05)){
   barplot(unlist(m55[i, -1]), ylim=c(0, 5), space=0, border=NA, xaxt="n", yaxt="n")
 }
 
@@ -374,6 +406,27 @@ for (i in c(1:nrow(m55))){
 }
 ```
 
+```{r}
+library(tidyverse)
+options(stringsAsFactors = F)
+options(scipen = 999)
+library(readxl)
+read_excel("data/WORLD-MACHE_Gender_6.8.15.xls", "Sheet1", col_names=T) %>% 
+    select(iso3, 6:24) %>%
+    filter(matleave_13 == 5, matleave_95 != 5) %>% 
+    gather("year", "degree", 2:20) %>% 
+    #spread(year, degree, fill = 0) %>% View
+    replace_na((list(degree = 0))) %>%
+    mutate(year2 = as.POSIXct(strptime(year, "matleave_%y"))) %>% 
+    mutate(year3 = lubridate::year(year2)) %>% 
+    ggplot() +
+    aes(year3, degree) +
+    geom_col(color = "royalblue", fill = "royalblue") +
+    facet_wrap(~ iso3) +
+    theme_void()
+    
+
+```
 
 
 # (More) The fittest version to compute staySame

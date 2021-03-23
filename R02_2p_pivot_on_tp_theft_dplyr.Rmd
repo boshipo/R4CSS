@@ -25,40 +25,44 @@ library(tidyverse)
 options(stringsAsFactors = F)
 ```
 
-# Reading data
 ```{r}
-# Read by read_csv()
-# Will raise error
-# Error in make.names(x) : invalid multibyte string at '<bd>s<b8><b9>'
-library(readr)
-url <- "http://data.taipei/opendata/datalist/datasetMeta/download?id=68785231-d6c5-47a1-b001-77eec70bec02&rid=34a4a431-f04d-474a-8e72-8d3f586db3df"
-
-# read_csv() with locale encoding = "Big5" -> df
+library(httr)
+options(stringsAsFactors = F)
+url <- "https://data.taipei/api/getDatasetInfo/downloadResource?id=68785231-d6c5-47a1-b001-77eec70bec02&rid=93d9bc2d-af08-4db7-a56b-9f0a49226fa3"
 df <- read_csv(url, locale = locale(encoding = "Big5"))
-
 ```
-
 
 # Cleaning data I
 - Renaming variables by `select()`
-```
+
     select(id = 編號, 
            cat = 案類, 
            date = `發生(現)日期`, 
            time = `發生時段`, 
            location = `發生(現)地點`) %>%
-```
+
 - Generating variable year
 - Generating variable month
 - Retrieving area
+
+
 ```{r}
+df1 <- select(df, id = "編號", cat = "案類", date = "發生(現)日期", time = "發生時段", location = "發生(現)地點")
 
+df2 <- mutate(df1, year = date%/%10000)
+df3 <- mutate(df2, month = date%%10000%/%100)
+df4 <- mutate(df3, area = str_sub(location, 4, 6))
+df5 <- mutate(df4, county = str_sub(location, 1, 3))
 
+```
 
-
-
-
-
+```{r}
+df_new <- df %>%
+  select(id = "編號", cat = "案類", date = "發生(現)日期", time = "發生時段", location = "發生(現)地點") %>%
+  mutate(year = date%/%10000) %>%
+  mutate(month = date%%10000%/%100) %>%
+  mutate(area = str_sub(location, 4, 6)) %>%
+  mutate(county = str_sub(location, 1, 3)) 
 
 ```
 
@@ -68,11 +72,15 @@ df <- read_csv(url, locale = locale(encoding = "Big5"))
 ```{r}
 # readr::guess_encoding("data/tptheft.csv")
 
-
-
-
-
-
+url <- "https://data.taipei/api/getDatasetInfo/downloadResource?id=68785231-d6c5-47a1-b001-77eec70bec02&rid=93d9bc2d-af08-4db7-a56b-9f0a49226fa3"
+df <- read_csv(url, locale = locale(encoding = "Big5")) %>% 
+  select(date = "發生(現)日期", time = "發生時段", location = "發生(現)地點") %>%
+  mutate(county = str_sub(location, 1, 3), 
+         area = str_sub(location, 4, 5),
+         year = date%/%10000,
+         month = date%%10000%/%100,
+         time = str_sub(time, 1, 2))%>% 
+  filter(county == "臺北市")
 ```
 
 
@@ -82,9 +90,9 @@ df <- read_csv(url, locale = locale(encoding = "Big5"))
 
 ```{r}
 # count() then spread() df -> df.wide
-
-
-
+df_wide <- df %>%
+  count(area, time) %>% 
+  spread(key = time, value = n, fill = 0) 
 
 ```
 
@@ -93,13 +101,10 @@ df <- read_csv(url, locale = locale(encoding = "Big5"))
 - Setting rowname by `row.names()`
 - Assigning NULL to variable in data.frame to delete it
 ```{r}
-
-
-
+df_wide <- data.frame(df_wide)
+row.names(df_wide) <- df_wide$area
+df_wide$area <- NULL
 ```
-
-
-
 
 ```{r warning=FALSE}
 
@@ -113,7 +118,31 @@ colors <- c('#D0104C', '#DB4D6D', '#E83015',  '#F75C2F',
             '#BEC23F', '#90B44B', '#66BAB7', '#1E88A8')
 
 # mosaicplot()
-mosaicplot(df.wide, color=colors, border=0, off = 3,
+mosaicplot(df_wide, color=colors, border=0, off = 3,
            main="Theft rate of Taipei city (region by hour)")
+
+```
+
+#產假支薪
+
+```{r}
+library(tidyverse)
+options(stringsAsFactors = F)
+options(scipen = 999)
+library(readxl)
+read_excel("data/WORLD-MACHE_Gender_6.8.15.xls", "Sheet1", col_names=T) %>% 
+    select(iso3, 6:24) %>%
+    filter(matleave_13 == 5, matleave_95 != 5) %>% 
+    gather("year", "degree", 2:20) %>% 
+    #spread(year, degree, fill = 0) %>% View
+    replace_na((list(degree = 0))) %>%
+    mutate(year2 = as.POSIXct(strptime(year, "matleave_%y"))) %>% 
+    mutate(year3 = lubridate::year(year2)) %>% 
+    ggplot() +
+    aes(year3, degree) +
+    geom_col(color = "royalblue", fill = "royalblue") +
+    facet_wrap(~ iso3) +
+    theme_void()
+    
 
 ```

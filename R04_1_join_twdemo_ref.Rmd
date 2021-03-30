@@ -1,7 +1,7 @@
 ---
 title: "R04_1_join_twdemo_ref"
-author: "Jilung Hsieh"
-date: "2020/4/18"
+author: "黃詩博"
+date: "2021/3/23"
 output:
   html_document:
     theme: cerulean
@@ -27,24 +27,25 @@ options(scipen = 999)
 
 # Read demographic data: read csv
 ```{r read csv}
-raw <- read_csv("data/opendata107Y030.csv") %>%
+raw <- read_csv("data/opendata107Y030.csv") %>% 
     slice(-1) %>%
     mutate(vname = str_c(site_id, village)) %>%
-    select(vname, everything())
+    select(vname, everything()) 
 
 raw %>% glimpse()
+
 ```
 
 # Tidy data
 ```{r}
 tidy_data <- raw %>%
-    gather("key", "value", 6:ncol(.)) %>% 
+    gather("key", "value", 6:ncol(.)) %>%  
     mutate(key = str_replace(key, "_age", "")) %>%
     mutate(key = str_replace(key, "100up", "100_110")) %>%
     mutate(key = str_replace(key, "15down", "0_15")) %>%
     separate(key, c("married", "ageLower", "ageUpper", "gender")) %>%
     mutate(ageLower = as.numeric(ageLower),
-           # age = str(ageLower, ageUpper), 
+           age = str(ageLower, ageUpper), 
            ageUpper = as.numeric(ageUpper),
            value = as.numeric(value)) %>%
     select(-statistic_yyy) %>%
@@ -63,7 +64,7 @@ village_stat <- tidy_data %>%
               elderSum = sum(value[ageLower >= 65]),
               marriedSum = sum(value[married %in% c("married", "divorced", "widowed")]),
               womenSum = sum(value[gender == "f"])) %>%
-    ungroup() %>%
+    ungroup() %>% 
     left_join(raw %>% select(vname, site_id), by = "vname")
     
 ```
@@ -74,12 +75,12 @@ village_stat <- tidy_data %>%
 ```{r}
 village_stat %>%
   mutate(townname = str_sub(vname, 1, 6)) %>%
-  filter(site_id != townname) %>% View
+  filter(site_id != townname) 
 
 
 village_stat %>%
   separate(vname, c("townname", "villagename"), sep = "鄉|鎮|市|區", remove = F) %>%
-  filter(site_id != townname) %>% View
+  filter(site_id != townname)
 
 village_stat %>%
     left_join(raw %>% select(vname, site_id), by = "vname") %>% head()
@@ -113,6 +114,7 @@ town_stat %>%
     ggplot() +
     aes(marriedPerc, elderPerc) + 
     geom_jitter(alpha = 0.3)
+#alpha是每個點的透明度
 ```
 
 
@@ -123,7 +125,7 @@ town_stat %>%
 ```{r}
 ref10 <- read_csv("data/referendum_byTown/ref10.csv") %>%
     select(county = 縣市, town = 鄉鎮市區,
-            agree = 同意票數, disagree = 不同意票數,
+           agree = 同意票數, disagree = 不同意票數,
            legalVote = 有效票數, illegalVote = 無效票數, 
            vote = 投票數, legalPopulation =  投票權人數)  %>%
     mutate(site_id = str_c(county, town)) %>%
@@ -135,7 +137,7 @@ names(ref10)
 
 # try to join data
 ```{r}
-town_stat %>% left_join(ref10, by = "site_id") %>% View
+town_stat %>% left_join(ref10, by = "site_id")
 ```
 
 
